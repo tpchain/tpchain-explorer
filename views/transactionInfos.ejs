@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="ethExplorer" class="no-js">
+
+<head>
+    <base href="/">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>TPChain Explorer</title>
+    <meta name="description" content="An Teapass (TPCH) Block Explorer">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="styles/main.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootswatch/3.3.7/darkly/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.5.2/animate.min.css">
+    <link rel="shortcut icon" href=" favicon.ico" />
+</head>
+
+<body>
+    <nav class="navbar navbar-dark navbar-static-top" role="navigation">
+        <div class="container">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar-collapse-1">
+                    <span class="sr-only">Toggle navigation</span>
+                    <i class="fa fa-bars"></i>
+                </button>
+                <a class="navbar-brand" href="./" data-locale="projectname">TPCH Explorer</a>
+            </div>
+            <div class="collapse navbar-collapse" id="navbar-collapse-1">
+                <ul class="nav navbar-nav">
+                    <li><a href="./" data-locale="homename">首页</a></li>
+                    <li><a href="./chain" data-locale="blockchainInfo">信息</a></li>
+                </ul>
+                <div class="col-sm-3 col-md-3 pull-right">
+                    <form class="navbar-form" ng-controller="mainCtrl" ng-submit="processRequest()" name="search_form"
+                        role="search">
+                        <div class="input-group">
+                            <input type="text" style="width: 150px !important;"
+                                placeholder="Tx Hash, Address, or Block #" name="requestType" required
+                                ng-model="ethRequest" class="form-control searchi">
+                            <div class="input-group-btn">
+                                <button class="btn btn-primary btn-blue" type="submit"><i
+                                        class="fa fa-search"></i></button>
+                            </div>
+                            <div>
+                                <select id="lang" class="form-control header-lang" style="width: 70px;">
+                                    <option checked value="zh">zh</option>
+                                    <option value="en">en</option>
+                                </select>
+                            </div>
+                        </div>
+                    </form>
+
+                </div>
+
+            </div>
+        </div>
+    </nav>
+
+
+    <div ng-view>
+        <div class="container" style="padding-top:5px;">
+
+            <h1><i class="fa fa-exchange" ></i> <a data-locale="transaction" >交互</a>
+                <!-- <small>View information about an teapass transaction</small> -->
+            </h1>
+        
+            <div id="tx-97785883" class="txdiv">
+              <div class="table-responsive">
+                <table class="table table-striped" cellpadding="0" cellspacing="0" style="padding:0px;float:left;margin:0px;width:100%">
+                    <tbody>
+                    <tr>
+                        <th colspan="3" align="left"><a class="hash-link" href="./tx/<%= txId  %>"><%= txId  %></a> <span class="pull-right"></span></th>
+                    </tr>
+                    <tr>
+                        <td style="text-align:center;vertical-align:middle;">
+                            <a href="./address/<%= from  %>" style="color: #00bc8c;"><%= from  %></a>
+                            <br>
+                        </td>
+                        <td width="48px" class="" style="text-align:center;vertical-align:middle;">
+                            <button type="button" class="btn btn-success"><span class="glyphicon glyphicon-arrow-right" aria-hidden="true"></span></button>
+                        </td>
+                        <td style="text-align:center;vertical-align:middle;">
+                            <a href="./address/<%= to  %>" style="color: #00bc8c;"><%= to  %></a>
+                            <span class="pull-right">
+                                <span><%= ethValue  %> TPCH</span>
+                            </span>
+                            <br>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+              </div>
+                <div style="padding-bottom:30px;width:100%;text-align:right;clear:both">   <!--TODO no style tags...-->
+                    <button class="btn btn-primary"><%= conf  %> <a data-locale="confirmations" >交互确认</a></button>
+                    <button class="btn btn-success cb"><span><%= ethValue  %> TPCH</span></button>
+                </div>
+                <div class="table-responsive">
+                <table class="table table-striped">
+                    <tbody><tr>
+                        <th colspan="2" style="text-align:left"><a data-locale="summary" style="text-decoration:none">摘要</a></th>
+                    </tr>
+                    <tr>
+                        <td><a data-locale="blockhash" >区块哈希</a></td>
+                        <td><a href="./block/<%= blockHash  %>" style="color: #00bc8c;"><%= blockHash  %></a></td>
+                    </tr>
+                    <tr>
+                        <td><a data-locale="receivedtime" >时间戳</a></td>
+                        <td>
+                            <%= time  %>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><a data-locale="includedinblock" >包含的块</a></td>
+                        <td>
+                            <a href="./block/<%= blockNumber %>"><button class="btn btn-sm btn-primary" style="background-color: #00bc8c;border-color:#00bc8c"><%= blockNumber %></button></a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><a data-locale="gasused" >能量</a></td>
+                        <td><%= gas %></td>
+                    </tr>
+                    <tr>
+                        <td><a data-locale="gasprice" >能量单位</a></td>
+                        <td><%= gasPrice %></td>
+                    </tr>
+                    <tr>
+                        <td><a data-locale="transactionconfirmations" >交互确认</a></td>
+                        <td><span style="color: #00bc8c;font-weight: bold;"><%= conf %></span></td>
+                    </tr>
+                    <tr>
+                        <td><a data-locale="transactionSender" >发送方之前的交互数</a></td>
+                        <td><%= nonce %></td>
+                    </tr>
+                    <tr>
+                        <td><a data-locale="transactionprice" >交互数值</a></td>
+                        <td><%= txprice %></td>
+                    </tr>
+                    <tr>
+                        <td><a data-locale="data" >数据</a></td>
+                        <td>
+                            <textarea style="min-width: 100%; background-color: #bdbebe; color: #00bc8c;" id="input-text"><%= inpututf8 %></textarea>
+                            <input type="text" style="display:none" id='input-none-text' value='<%= input %>' />
+                            <select name="input-type" id="input-type"
+                                style="text-decoration:none;background-color: #5f86a3;">
+                                <option value="utf8">UTF-8</option>
+                                <option value="hex">Hex</option>
+                                <option value="utf">UTF</option>
+                            </select>
+                        </td>
+                    </tr>
+        
+        
+                    </tbody>
+                </table>
+               
+              </div>
+            </div>
+        
+        </div>
+        
+
+
+    </div>
+
+    <script src="scripts/angular.min.js"></script>
+
+    <script src="scripts/jquery-3.4.1.min.js"></script>
+    <script src="scripts/bootstrap.min.js"></script>
+    <script src="scripts/i18n/jquery.i18n.properties.js"></script>
+    <script src="scripts/i18n/language.js"></script>
+    <script src="scripts/hex.js?v=1.2"></script>
+
+
+    <!--Services-->
+    <div id="connectwarning" class="modal fade" role="dialog">
+
+        <!-- begin AltSheets -->
+        <div id="connectwarning-dialog" class="modal-dialog">
+            <!-- end AltSheets -->
+
+            <!-- Modal content-->
+            <div class="modal-content">
+                <center>
+                    <div class="modal-header">
+                        <h4 class="modal-title">Allow Access to tpch and Refresh the Page</h4>
+                    </div>
+                    <div class="modal-body">
+                        <code><p id="modaltext"></p></code>
+                    </div>
+                </center>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="footer styledfoot">
+        <footer><br />
+            © TPCH EXPLORER BETA 2019 | <a href="#" data-locale="linkurl">Website</a><br />
+            <br />
+        </footer>
+    </div>
+</body>
+
+</html>

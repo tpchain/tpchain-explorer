@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="ethExplorer" class="no-js">
+
+<head>
+    <base href="/">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>TPChain Explorer</title>
+    <meta name="description" content="An Teapass (TPCH) Block Explorer">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="styles/main.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootswatch/3.3.7/darkly/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.5.2/animate.min.css">
+    <link rel="shortcut icon" href=" favicon.ico" />
+</head>
+
+<body>
+    <nav class="navbar navbar-dark navbar-static-top" role="navigation">
+        <div class="container">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar-collapse-1">
+                    <span class="sr-only">Toggle navigation</span>
+                    <i class="fa fa-bars"></i>
+                </button>
+                <a class="navbar-brand" href="./" data-locale="projectname">TPCH Explorer</a>
+            </div>
+            <div class="collapse navbar-collapse" id="navbar-collapse-1">
+                <ul class="nav navbar-nav">
+                    <li><a href="./" data-locale="homename">首页</a></li>
+                    <li><a href="./chain" data-locale="blockchainInfo">信息</a></li>
+                </ul>
+                <div class="col-sm-3 col-md-3 pull-right">
+                    <form class="navbar-form" ng-controller="mainCtrl" ng-submit="processRequest()" name="search_form"
+                        role="search">
+                        <div class="input-group">
+                            <input type="text" style="width: 150px !important;"
+                                placeholder="Tx Hash, Address, or Block #" name="requestType" required
+                                ng-model="ethRequest" class="form-control searchi">
+                            <div class="input-group-btn">
+                                <button class="btn btn-primary btn-blue" type="submit"><i
+                                        class="fa fa-search"></i></button>
+                            </div>
+                            <div>
+                                <select id="lang" class="form-control header-lang" style="width: 70px;">
+                                    <option checked value="zh">zh</option>
+                                    <option value="en">en</option>
+                                </select>
+                            </div>
+                        </div>
+                    </form>
+
+                </div>
+
+            </div>
+        </div>
+    </nav>
+
+
+    <div ng-view>
+        <div class="container" style="padding-top: 10px;">
+
+            <div class="boxi" style="clear:both;">
+                <!-- <a style="color: white;text-decoration:none" data-locale="viewinfoabout">View information about Teapass</a>  -->
+                <i class="fa fa-cube"></i> <a style="text-decoration:none" data-locale="blocknumber">区块</a>
+                <%= number  %></div>
+
+            <div id="block" class="blockdiv">
+                <div style="padding-bottom:30px;width:100%;text-align:right;clear:both">
+                    <button class="btn btn-primary"> <%= conf  %><a data-locale="confirmations">确认</a></button>
+                    <button class="btn btn-success cb"><span> <%= gasUsed  %><a
+                                data-locale="gasused">能量</a></span></button>
+                    <a class="btn btn-primary btn-sm" ng-class="{disabled:firstBlock}"
+                        href="./block/<%= blockNumber - 1  %>" data-locale="prev">&lt; 前</a>
+                    <a class="btn btn-primary btn-sm" ng-class="{disabled: lastBlock}"
+                        href="./block/<%= blockNumber + 1  %>" data-locale="next">后 &gt;</a>
+                </div>
+                <h2 style="margin-top: 30px;">
+                    <i class="fa fa-cube" data-locale="summary">摘要</i>
+                    <small><a data-locale="infoofblock">- 区块信息</a> <%= number  %></small>
+                </h2>
+                <table class="table table-striped">
+                    <tbody>
+                        <tr>
+                            <td><a data-locale="blocknumber1" style="text-decoration:none">区块高度</a></td>
+                            <td><a href="./block/<%= blockNumber  %>" style="color: #00bc8c;font-weight: bold;">
+                                    <%= number  %></a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><a data-locale="blockhash" style="text-decoration:none">区块哈希</a></td>
+                            <td> <%= hash  %></td>
+                        </tr>
+                        <tr>
+                            <td><a data-locale="receivedtime" style="text-decoration:none">时间戳</a></td>
+                            <td>
+                                <%= timestamp  %>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><a data-locale="confirmations" style="text-decoration:none">交互确认</a></td>
+                            <td><span style="color: #00bc8c; font-weight: bold;"> <%= conf  %></span></td>
+                        </tr>
+                        <tr>
+                            <td><a data-locale="difficulty" style="text-decoration:none">难度</a></td>
+                            <td>
+                                <%= difficulty  %>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><a data-locale="nonce" style="text-decoration:none">操作数</a></td>
+                            <td> <%= nonce  %></td>
+                        </tr>
+                        <tr>
+                            <td><a data-locale="size" style="text-decoration:none">大小</a></td>
+                            <td> <%= size  %> bytes</td>
+                        </tr>
+                        <tr>
+                            <td><a data-locale="miner" style="text-decoration:none">节点</a></td>
+                            <td><a href="./address/<%= miner  %>" style="color: #00bc8c;"> <%= miner  %></a></td>
+                        </tr>
+                        <tr>
+                            <td><a data-locale="gaslimit" style="text-decoration:none">能量上限</a></td>
+                            <td> <%= gasLimit  %></td>
+                        </tr>
+                        <tr>
+                            <td><a data-locale="gasused" style="text-decoration:none">能量</a></td>
+                            <td> <%= gasUsed  %></td>
+                        </tr>
+                        <tr>
+                            <td><a data-locale="unclehash" style="text-decoration:none">叔伯块哈希</a></td>
+                            <td> <%= uncledata  %></td>
+                        </tr>
+                        <tr>
+                            <td><a data-locale="stateroothash" style="text-decoration:none">状态根哈希</a></td>
+                            <td> <%= rootHash  %></td>
+                        </tr>
+                        <tr>
+                            <td><a data-locale="parenthash" style="text-decoration:none">父块哈希</a></td>
+                            <td> <%= parentHash  %></td>
+                        </tr>
+                        <tr>
+                            <td><a data-locale="data" style="text-decoration:none">数据</a></td>
+                            <td> <%= extraData  %></td>
+                        </tr>
+
+                        <tr>
+                            <td><a data-locale="translatedData" style="text-decoration:none">解析数据</a></td>
+                            <td> <%= dataFromHex  %></td>
+
+                        </tr>
+
+                        <tr>
+                            <td><a data-locale="uncleblocksnum" style="text-decoration:none">叔块数</a></td>
+                            <td> <%= numberOfUncles  %></td>
+                        </tr>
+
+                        <tr>
+                            <td><a data-locale="transactionsNum" style="text-decoration:none">交互数量</a></td>
+                            <td> <%= numberOfTransactions  %></td>
+                        </tr>
+
+                    </tbody>
+                </table>
+            </div>
+
+            <h2 style="margin-top: 30px;">
+                <i class="fa fa-exchange"><a data-locale="transactions">交互数据</a></i>
+                <!-- <small style="color:#3c729c ;">- contained in current block</small> -->
+            </h2>
+
+            <div ng-repeat="tx in transactions" id="transactionsDiv">
+
+
+                <hr>
+            </div>
+
+        </div>
+
+
+    </div>
+
+    <script src="scripts/angular.min.js"></script>
+
+    <script src="scripts/jquery-3.4.1.min.js"></script>
+    <script src="scripts/bootstrap.min.js"></script>
+    <script src="scripts/i18n/jquery.i18n.properties.js"></script>
+    <script src="scripts/i18n/language.js"></script>
+    <script src="scripts/hex.js?v=1.2"></script>
+    <script>
+
+        $(function () {
+
+            $.ajax({
+                type: "post",
+                url: "/getTransactionReceipt",
+                data: { blockId: '<%= number  %>' },
+                dataType: "json",
+
+                success: function (result) {
+                    if (result.state) {
+
+                        var infoList = result.data;
+
+                        for (var info of infoList) {
+
+                            var _Html =
+
+                                '<table class="table table-striped">' +
+                                '<tbody>' +
+                                '<tr>' +
+                                '<th colspan="2" style="text-align:left"><a data-locale="transaction" text-decoration:none">交互</a>' +
+                                ' #'+ info.index+'</th>' +
+                                ' </tr>' +
+                                '<tr>' +
+                                '<td><a data-locale="hash" style="text-decoration:none">哈希</a></td>' +
+                                '<td><a href="./tx/'+ info.hash +'">'+ info.hash +'</a></td>' +
+                                '</tr>' +
+                                '<tr>' +
+                                '<td><a data-locale="from" style="text-decoration:none">从</a></td>' +
+                                '<td><a href="./address/'+ info.from +'">'+ info.from +'</a></td>' +
+                                '</tr>' +
+                                '<tr>' +
+                                '<td><a data-locale="to" style="text-decoration:none">到</a></td>' +
+                                '<td><a href="./address/'+ info.to +'">'+ info.to +'</a></td>' +
+                                '</tr>' +
+                                '<tr>' +
+                                '<td><a data-locale="contractAddress" style="text-decoration:none">合约地址</a></td>' +
+                                '<td><a href="./address/'+ info.contractAddress +'">'+ info.contractAddress +'</a></td>' +
+                                '</tr>' +
+                                '<tr>' +
+                                '<td><a data-locale="gas" style="text-decoration:none">能量</a></td>' +
+                                '<td>'+ info.gas +'</td>' +
+                                '</tr>' +
+                                '<tr>' +
+                                '<td><a data-locale="input" style="text-decoration:none">输入</a></td>' +
+                                '<td>' +
+                                '<textarea style="min-width: 100%; background-color: #5f86a3; color: #00bc8c;" id="input-text">'+ info.inpututf8 +'</textarea>' +
+                                '<input type="text" style="display:none" id="input-none - text" value="'+ info.input +'" />' +
+                                    '<select name="input-type" id="input-type"' +
+                                    'style="text-decoration:none;background-color: #5f86a3;">' +
+                                    '<option value="utf8">UTF-8</option>' +
+                                    '<option value="hex">Hex</option>' +
+                                    '<option value="utf">UTF</option>' +
+
+                                    '</select>' +
+
+                                    '</td>' +
+                                    '</tr>' +
+                                    '<tr>' +
+                                    '<td><a data-locale="value" style="text-decoration:none">数值</a></td>' +
+                                    '<td>'+ info.value +' TPCH</td>' +
+                                    '</tr>' +
+                                    '</tbody>' +
+                                    '</table>' ;
+
+
+                                    $('#transactionsDiv').append(_Html);
+                        }
+
+                    } else {
+                        layer.alert(result.msg);
+                    }
+                    return false;
+                },
+                //请求失败，包含具体的错误信息
+                error: function (e) {
+                    console.log(e.status);
+                    console.log(e.responseText);
+                }
+            });
+
+
+        })
+
+    </script>
+
+    <!--Services-->
+    <div id="connectwarning" class="modal fade" role="dialog">
+
+        <!-- begin AltSheets -->
+        <div id="connectwarning-dialog" class="modal-dialog">
+            <!-- end AltSheets -->
+
+            <!-- Modal content-->
+            <div class="modal-content">
+                <center>
+                    <div class="modal-header">
+                        <h4 class="modal-title">Allow Access to tpch and Refresh the Page</h4>
+                    </div>
+                    <div class="modal-body">
+                        <code><p id="modaltext"></p></code>
+                    </div>
+                </center>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="footer styledfoot">
+        <footer><br />
+            © TPCH EXPLORER BETA 2019 | <a href="#" data-locale="linkurl">Website</a><br />
+            <br />
+        </footer>
+    </div>
+</body>
+
+</html>
