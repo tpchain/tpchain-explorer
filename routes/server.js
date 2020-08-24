@@ -3,9 +3,11 @@ var bodyParser = require('body-parser');
 var urlencodedParser = bodyParser.urlencoded({ extended: false })
 var router = express.Router();
 let config = require('./config');
+var request = require('request');
 
 var BigNumber = require('bignumber.js');
 let Web3 = require('web3');
+
 
 let web3 = new Web3(new Web3.providers.HttpProvider(config.GETH_HOSTNAME + ":" + config.GETH_RPCPORT));
 
@@ -13,15 +15,25 @@ let web3 = new Web3(new Web3.providers.HttpProvider(config.GETH_HOSTNAME + ":" +
  * 首页
  */
 router.get('/', function (req, res) {
-    res.render('index.ejs');
+    getNewChainInfos(function (info) {
+
+        // if (isNaN(info.difficulty)) { }
+        // else {
+        //     var n = info.difficulty / 1000000;
+        //     info.difficulty = n.toFixed(3) + " M";//算力单位，H/s、KH/s、MH/s、GH/s、TH/s、PH/s、EH/s
+        // }
+        res.render('index.ejs', info);
+    })
+
 })
+
 
 /**
  * 链信息
  */
 router.get('/chain', function (req, res) {
 
-    getChainInfos(function (chainInfo) {
+    getNewChainInfos(function (chainInfo) {
         res.render('chainInfo.ejs', chainInfo);
     });
 
@@ -34,7 +46,7 @@ router.get('/chain', function (req, res) {
 router.get('/block/:blockId', function (req, res) {
 
     const blockId = req.params.blockId;
-    getBlockInfos(blockId, function (info) {
+    getBlockValueInfos(blockId, function (info) {
 
         res.render('blockInfo.ejs', info);
     })
@@ -55,6 +67,162 @@ router.get('/tx/:hash', function (req, res) {
 })
 
 /**
+ * 获取交易信息
+ */
+router.get('/:tt/tx/:hash', function (req, res) {
+    const hash = req.params.hash;
+
+    getTransactionInfos(hash, function (info) {
+
+        res.render('transactionInfos.ejs', info);
+    })
+
+})
+
+/**
+ * 查询地址
+ */
+router.get('/address/:address', function (req, res) {
+
+    const addressId = req.params.address;
+
+    getAddressInfos(addressId, function (info) {
+        res.render('addressInfos.ejs', info);
+    })
+
+})
+
+/**
+ * 查询
+ */
+router.get('/search', function (req, res) {
+
+    const requestStr = req.query.requestType;
+
+    var regexpTx = /[0-9a-zA-Z]{64}?/;
+    var regexpAddr = /^(0x)?[0-9a-f]{40}$/; 
+    var regexpBlock = /[0-9]{1,7}?/;
+
+    var result = regexpTx.test(requestStr);
+    if (result === true) {
+        getTransactionInfos(requestStr, function (info) {
+
+            res.render('transactionInfos.ejs', info);
+        })
+    }
+    else {
+        result = regexpAddr.test(requestStr.toLowerCase());
+        if (result === true) {
+            getAddressInfos(requestStr.toLowerCase(), function (info) {
+                res.render('addressInfos.ejs', info);
+            })
+        }
+        else {
+            result = regexpBlock.test(requestStr);
+            if (result === true) {
+                getBlockValueInfos(requestStr, function (info) {
+
+                    res.render('blockInfo.ejs', info);
+                })
+            }
+            else {
+                getNewChainInfos(function (info) {
+                    res.render('index.ejs', info);
+                })
+            }
+        }
+    }
+
+})
+
+/**
+ * 获取交易记录
+ */
+router.post('/getAddressTransactionInfos', urlencodedParser, function (req, res) {
+    const addressId = req.body.addressId;
+
+    getAddressTransactionList(addressId, function (info) {
+        res.send({
+            state: true,
+            msg: "",
+            data: info
+        });
+    })
+})
+
+/**
+ * 获取地址信息
+ * @param {*} addressId 
+ * @param {*} callback 
+ */
+async function getAddressInfos(addressId, callback) {
+
+    let info = {};
+    info.addressId = addressId;
+    info.balance = await web3.eth.getBalance(addressId);
+    info.balance = web3.utils.fromWei(info.balance, "ether");
+    info.txCount = await web3.eth.getTransactionCount(addressId);
+    info.code = await web3.eth.getCode(addressId);
+
+    callback(info);
+
+
+}
+
+//获取交易记录
+function getAddressTransactionList(addressId, callback) {
+
+    request({
+        url: config.SERVICE_URL + "/transactionfromblocklist",
+        method: "POST",
+        json: true,
+        headers: {
+            "content-type": "application/json",
+        },
+        // body: _bodyString
+        body: { "address": addressId.toLowerCase() }
+    }, function (error, response, body) {
+        if (!error && response.statusCode == 200) {
+
+            let transactionlist = body;
+
+            var date = new Date()
+            var transactions = [];
+            var index = 1;
+            transactionlist.forEach(info => {
+
+                var _value = info.value.c[0].toString().padEnd(info.value.e + 1, '0');
+                var transaction = {
+                    index: index,
+                    id: info.hash,
+                    hash: info.hash,
+                    from: info.from,
+                    to: info.to,
+                    gas: info.gas,
+                    input: info.input,
+                    value: web3.utils.fromWei(_value, "ether"),
+                    // value: info.value,
+                    contractAddress: info.contractAddress,
+                    timestamp: (info.timestamp == '' || info.timestamp == undefined) ? '' : new Date(info.timestamp * 1000).toUTCString()
+                }
+
+                transactions.push(transaction);
+                index++;
+            });
+
+
+
+            callback(transactions);
+
+
+        } else {
+            console.log(body);
+
+        }
+    });
+
+}
+/**
  * 获取区块信息包含的交易
  */
 router.post('/getTransactionReceipt', urlencodedParser, function (req, res) {
@@ -68,6 +236,54 @@ router.post('/getTransactionReceipt', urlencodedParser, function (req, res) {
     })
 })
 
+
+/**
+ * 获取最近区块的信息
+ */
+router.post('/getBlockAndTxListInfos', urlencodedParser, function (req, res) {
+
+    getBlockAndTxListInfos(function (resInfos) {
+        res.send({
+            state: true,
+            msg: "",
+            data: resInfos
+        });
+
+    })
+
+})
+
+
+/**
+ * 首页，获取最近区块的信息
+ * @param {*} callback 
+ */
+async function getBlockAndTxListInfos(callback) {
+    const currentBlockNumber = await web3.eth.getBlockNumber();
+    let blockInfos = [];
+    let txInfos = [];
+    for (var i = 0; i < 10 && currentBlockNumber - i >= 0; i++) {
+
+        let blockNumber = currentBlockNumber - i;
+
+        let blockInfo = await getBlockInfos(blockNumber);
+        blockInfos.push(blockInfo);
+
+        let txInfo = await getTransactionReceiptInfo(blockNumber);
+        if (txInfo.length > 0) txInfos.push(txInfo);
+
+    }
+
+    let chainInfo = await getChainInfos();
+
+    let resInfo = {
+        blockInfos: blockInfos,
+        txInfos: txInfos,
+        chainInfo: chainInfo
+    }
+
+    callback(resInfo);
+}
 
 /**
  * 获取交易hash下的数据
@@ -124,12 +340,23 @@ async function getTransactionInfos(hash, callback) {
 
     callback(info);
 }
+
+
 /**
  * 获取区块下的信息
  * @param {*} blockId 
  * @param {*} callback 
  */
 async function getTransactionReceipt(blockId, callback) {
+
+    let resInfo = await getTransactionReceiptInfo(blockId);
+
+    callback(resInfo);
+
+
+}
+
+async function getTransactionReceiptInfo(blockId) {
 
     let resInfo = [];
 
@@ -158,7 +385,7 @@ async function getTransactionReceipt(blockId, callback) {
     }
 
 
-    callback(resInfo);
+    return resInfo;
 
 
 }
@@ -168,7 +395,15 @@ async function getTransactionReceipt(blockId, callback) {
  * @param {*} blockId 
  * @param {*} callback 
  */
-async function getBlockInfos(blockId, callback) {
+async function getBlockValueInfos(blockId, callback) {
+
+    let info = await getBlockInfos(blockId);
+
+    callback(info);
+}
+
+
+async function getBlockInfos(blockId) {
 
     let info = {};
     var number = await web3.eth.getBlockNumber();
@@ -193,6 +428,7 @@ async function getBlockInfos(blockId, callback) {
     info.nonce = blockInfo.nonce;
     var diff = ("" + blockInfo.difficulty).replace(/['"]+/g, '') / 1000000000000;
     info.difficulty = diff.toFixed(3) + " T";
+    info.diff = blockInfo.difficulty;
     info.gasLimit = new BigNumber(blockInfo.gasLimit).toFormat(0) + " m/s"; // that's a string
     info.gasUsed = new BigNumber(blockInfo.gasUsed).toFormat(0) + " m/s";
     info.nonce = blockInfo.nonce;
@@ -232,14 +468,22 @@ async function getBlockInfos(blockId, callback) {
     const txCount = await web3.eth.getBlockTransactionCount(blockId);
     info.numberOfTransactions = txCount;
 
-    callback(info);
+    return info;
 }
+
 
 /**
  * 获取链信息
  * @param {*} callbacke 
  */
-async function getChainInfos(callbacke) {
+async function getNewChainInfos(callback) {
+    let info = await getChainInfos();
+
+    callback(info);
+}
+
+
+async function getChainInfos() {
     let info = {};
 
     info.blockNum = await web3.eth.getBlockNumber();
@@ -314,8 +558,9 @@ async function getChainInfos(callbacke) {
     try { info.versionWhisper = web3.version.whisper; }
     catch (err) { info.versionWhisper = err.message; }
 
-    callbacke(info);
+    return info;
 }
+
 
 
 function toNonExponential(num) {

@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="ethExplorer" class="no-js">
+
+<head>
+    <base href="/">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>TPChain Explorer</title>
+    <meta name="description" content="An Teapass (TPCH) Block Explorer">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="styles/main.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootswatch/3.3.7/darkly/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.5.2/animate.min.css">
+    <link rel="shortcut icon" href=" favicon.ico" />
+</head>
+
+<body>
+    <nav class="navbar navbar-dark navbar-static-top" role="navigation">
+        <div class="container">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar-collapse-1">
+                    <span class="sr-only">Toggle navigation</span>
+                    <i class="fa fa-bars"></i>
+                </button>
+                <a class="navbar-brand" href="./" data-locale="projectname">TPCH Explorer</a>
+            </div>
+            <div class="collapse navbar-collapse" id="navbar-collapse-1">
+                <ul class="nav navbar-nav">
+                    <li><a href="./" data-locale="homename">首页</a></li>
+                    <li><a href="./chain" data-locale="blockchainInfo">信息</a></li>
+                </ul>
+                <div class="col-sm-3 col-md-3 pull-right">
+                    <form class="navbar-form" ng-controller="mainCtrl"  action="/search"  ng-submit="processRequest()" name="search_form"
+                        role="search">
+                        <div class="input-group">
+                            <input type="text" style="width: 150px !important;"
+                                placeholder="Tx Hash, Address, or Block #" name="requestType" required
+                                ng-model="ethRequest" class="form-control searchi">
+                            <div class="input-group-btn">
+                                <button class="btn btn-primary btn-blue" type="submit"><i
+                                        class="fa fa-search"></i></button>
+                            </div>
+                            <div>
+                                <select id="lang" class="form-control header-lang" style="width: 70px;">
+                                    <option checked value="zh">zh</option>
+                                    <option value="en">en</option>
+                                </select>
+                            </div>
+                        </div>
+                    </form>
+
+                </div>
+
+            </div>
+        </div>
+    </nav>
+
+
+    <div ng-view>
+        <div class="container" style="padding-top: 10px;">
+
+            <h1><i class="fa fa-code"><a data-locale="teapassaddress">TPCH地址</a></i>
+                <small><a data-locale="addressmemo">查看有关地址的信息</a></small>
+            </h1>
+            <hr>
+            <div id="address" class="blockdiv">
+                <div style="font-size: 32px; font-weight: lighter; margin-bottom: 15px; display: inline-block;color:#3c729c ;"
+                    align="center">
+                    <%= addressId  %> </div><br /><br />
+                <table class="table table-striped">
+                    <tbody>
+                        <tr>
+                            <th colspan="2" style="text-align:left" data-locale="summary">摘要</th>
+                        </tr>
+                        <tr>
+                            <td><a data-locale="currentbalance" style="font-weight:bold;text-decoration:none">数值</a>
+                            </td>
+
+                            <td><span style="font-size: 24px; font-weight: lighter;"><%= balance  %> TPCH</span><br />
+                            </td>
+                        </tr>
+
+                    </tbody>
+                </table>
+                <hr>
+
+            </div>
+            <h2 style="margin-top: 30px;">
+                <i class="fa fa-exchange"><a data-locale="transactions">交互数据</a></i>
+                <!-- <small style="color:#3c729c ;">- contained in current block</small> -->
+            </h2>
+
+            <div ng-repeat="tx in transactions" id="transactionsDiv">
+
+                <hr>
+            </div>
+        </div>
+
+
+
+    </div>
+
+    <script src="scripts/angular.min.js"></script>
+
+    <script src="scripts/jquery-3.4.1.min.js"></script>
+    <script src="scripts/bootstrap.min.js"></script>
+    <script src="scripts/i18n/jquery.i18n.properties.js"></script>
+    <script src="scripts/i18n/language.js"></script>
+    <script src="scripts/hex.js?v=1.2"></script>
+    <script>
+
+        $(function () {
+
+        
+            $.ajax({
+                type: "post",
+                url: "/getAddressTransactionInfos",
+                data: { addressId: '<%= addressId  %>' },
+                dataType: "json",
+
+                success: function (result) {
+                    if (result.state) {
+
+                        var infoList = result.data;
+
+                        for (var info of infoList) {
+
+                            var _Html =
+
+                                '<table class="table table-striped">' +
+                                '<tbody>' +
+                                '<tr>' +
+                                '<th colspan="2" style="text-align:left"><a data-locale="transactions" text-decoration:none">交互</a> #'+ info.index  + '</th>' +
+                                '</tr>' +
+                                '<tr>' +
+                                '<td><a data-locale="hash" style="text-decoration:none">哈希</a></td>' +
+                                '<td><a href="./tx/'+ info.hash  + '">'+ info.hash  + '</a></td>' +
+                                '</tr>' +
+                                '<tr>' +
+                                '<td><a data-locale="from" style="text-decoration:none">从</a></td>' +
+                                '<td><a href="./address/'+ info.from  + '">'+ info.from  + '</a></td>' +
+                                '</tr>' +
+                                '<tr>' +
+                                '<td><a data-locale="to" style="text-decoration:none">到</a></td>' +
+                                '<td><a href="./address/'+ info.to  + '">'+ info.to  + '</a></td>' +
+                                '</tr>' +
+                                '<tr>' +
+                                '<td><a data-locale="contractAddress" style="text-decoration:none">合约地址</a></td>' +
+                                '<td><a href="./address/'+ info.contractAddress  + '">'+ info.contractAddress  + '</a></td>' +
+                                '</tr>' +
+                                '<tr>' +
+                                '<td><a data-locale="gas" style="text-decoration:none">能量</a></td>' +
+                                '<td>'+ info.gas  + '</td>' +
+                                '</tr>' +
+                                '<tr>' +
+                                '<td><a data-locale="input" style="text-decoration:none">输入</a></td>' +
+                                '<td><textarea style="min-width: 100%; background-color: #5f86a3; color: #00bc8c;">'+ info.input  + '</textarea></td>' +
+                                '</tr>' +
+                                '<tr>' +
+                                '<td><a data-locale="value" style="text-decoration:none">数量</a></td>' +
+                                '<td>'+ info.value  + ' TPCH</td>' +
+                                '</tr>' +
+                                '<tr>' +
+                                '<td><a data-locale="timestamp" style="text-decoration:none">时间</a></td>' +
+                                '<td>'+ info.timestamp  + '</td>' +
+                                '</tr>' +
+                                '</tbody>' +
+                                '</table>';
+
+
+                            $('#transactionsDiv').append(_Html);
+                        }
+
+                    } else {
+                        layer.alert(result.msg);
+                    }
+                    return false;
+                },
+                //请求失败，包含具体的错误信息
+                error: function (e) {
+                    console.log(e.status);
+                    console.log(e.responseText);
+                }
+            });
+
+
+        })
+
+    </script>
+
+    <!--Services-->
+    <div id="connectwarning" class="modal fade" role="dialog">
+
+        <!-- begin AltSheets -->
+        <div id="connectwarning-dialog" class="modal-dialog">
+            <!-- end AltSheets -->
+
+            <!-- Modal content-->
+            <div class="modal-content">
+                <center>
+                    <div class="modal-header">
+                        <h4 class="modal-title">Allow Access to tpch and Refresh the Page</h4>
+                    </div>
+                    <div class="modal-body">
+                        <code><p id="modaltext"></p></code>
+                    </div>
+                </center>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="footer styledfoot">
+        <footer><br />
+            © TPCH EXPLORER BETA 2019 | <a href="#" data-locale="linkurl">Website</a><br />
+            <br />
+        </footer>
+    </div>
+</body>
+
+</html>

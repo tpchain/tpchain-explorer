@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en" ng-app="ethExplorer" class="no-js">
+
 <head>
     <base href="/">
     <meta charset="utf-8">
@@ -30,7 +31,7 @@
                     <li><a href="./chain" data-locale="blockchainInfo">信息</a></li>
                 </ul>
                 <div class="col-sm-3 col-md-3 pull-right">
-                    <form class="navbar-form" ng-controller="mainCtrl" ng-submit="processRequest()" name="search_form"
+                    <form class="navbar-form" ng-controller="mainCtrl" action="/search"  ng-submit="processRequest()" name="search_form"
                         role="search">
                         <div class="input-group">
                             <input type="text" style="width: 150px !important;"
@@ -59,120 +60,191 @@
     <div ng-view>
         <div class="container">
             <div class="row">
-              <div class="col-md-12" align="center">
-          </div></div>
-          </div>
-          <div class="container" style="padding-top: 20px;">
+                <div class="col-md-12" align="center">
+                </div>
+            </div>
+        </div>
+        <div class="container" style="padding-top: 20px;">
             <div class="row">
-              <div class="col-md-2" align="center"><div class="boxi"><a data-locale="currentblock" >区块高度</a><br />{{ blockNumber }}</div></div>
-              <!-- <div class="col-md-2" align="center"><div class="boxi">TPCH/USD Price:<br />{{ ethprice || "Loading" }}</div></div> -->
-              <div class="col-md-2" align="center"><div class="boxi"><a>TPCH数值</a> <br />Loading</div></div>
-              <div class="col-md-2" align="center"><div class="boxi"><a data-locale="gaslimit" >能量上限</a><br />{{ gasLimit }}</div></div>
-              <div class="col-md-2" align="center"><div class="boxi"><a data-locale="blocktime" >区块时间</a><br />{{ blocktime }} second(s)</div></div>
-              <div class="col-md-2" align="center"><div class="boxi"><a data-locale="currentdiff" >算法难度</a><br />{{ difficulty | diffFormat }}</div></div>
-              <div class="col-md-2" align="center"><div class="boxi"><a data-locale="hashrate" >哈希率</a><br />{{ hashrate || "Loading" | hashFormat }}</div></div>
+                <div class="col-md-2" align="center">
+                    <div class="boxi"><a data-locale="currentblock">区块高度</a><br /><span
+                            id="chainBlockNum"><%= blockNum  %></span></div>
+                </div>
+                <!-- <div class="col-md-2" align="center"><div class="boxi">TPCH/USD Price:<br />{{ ethprice || "Loading" }}</div></div> -->
+                <div class="col-md-2" align="center">
+                    <div class="boxi"><a>TPCH数值</a> <br />Loading</div>
+                </div>
+                <div class="col-md-2" align="center">
+                    <div class="boxi"><a data-locale="gaslimit">能量上限</a><br /><span
+                        id="chainGasLimit"><%= gasLimit  %></span></div>
+                </div>
+                <div class="col-md-2" align="center">
+                    <div class="boxi"><a data-locale="blocktime">区块时间</a><br /><span
+                        id="chainBlocktime"><%= blocktime  %> second(s)</span></div>
+                </div>
+                <div class="col-md-2" align="center">
+                    <div class="boxi"><a
+                            data-locale="currentdiff">算法难度</a><br /><span
+                            id="chainDifficulty"><%= (difficulty/ 1000000).toFixed(3) + " M"  %></span>
+                    </div>
+                </div>
+                <div class="col-md-2" align="center">
+                    <div class="boxi"><a data-locale="hashrate">哈希率</a><br />Loading</div>
+                </div>
             </div>
-            <h1><i class="fa fa-cubes" ><a data-locale="recentblocks" >最近区块</a></i>
-              <!-- <small style="color:#3c729c ;">Most Recent Blocks in the TeaPass Network</small> -->
-          </h1><br />
+            <h1><i class="fa fa-cubes"><a data-locale="recentblocks">最近区块</a></i>
+                <!-- <small style="color:#3c729c ;">Most Recent Blocks in the TeaPass Network</small> -->
+            </h1><br />
             <div class="table-responsive">
-              <table class="table table-striped table-hover table-bordered">
-                  <thead class="thead-inverse">
-                      <td>
-                          <strong><a data-locale="block" style="text-decoration:none">区块</a></strong>
-                      </td>
-                      <td><a data-locale="blockhash" style="text-decoration:none">区块哈希</a></td>
-                      <td><a data-locale="difficulty" style="text-decoration:none">难度</a></td>
-                      <td><a data-locale="miner" style="text-decoration:none">节点</a></td>
-                      <td><a data-locale="size" style="text-decoration:none">大小</a>
-                          
-                      </td>
-                      <td><a data-locale="date" style="text-decoration:none">时间</a>
-                      </td>
-                      <td><a data-locale="txs" style="text-decoration:none">消息</a>
-                      </td>
-                      <td><a data-locale="gasused" style="text-decoration:none">能量</a>
-                          
-                      </td>
-                  </thead>
-                  <tbody>
-                      <tr ng-repeat="block in blocks" class="animated fadeIn">
-                          <td>
-                              <a href="/#/block/{{ block.number }}">
-                                  <span class="btn btn-sm btn-primary"><i class="fa fa-cube"></i> {{ block.number }}</span>
-                              </a>
-                          </td>
-                          <td><a href="/#/block/{{ block.hash }}"><span class="btn btn-sm btn-success">{{ block.hash | truncate : 12 }}</span></a></td>
-                          <td style="vertical-align:middle;">{{ block.difficulty | diffFormat }}</td>
-                          <td style="vertical-align:middle;"><a href="/#/address/{{ block.miner }}">{{ block.miner }}</a></td>
-                          <td style="vertical-align:middle;">
-                              {{ block.size | sizeFormat }}
-                          </td>
-                          <td style="vertical-align:middle;">
-                              {{ block.timestamp * 1000 | date:'medium' }}
-                          </td>
-                          <td style="vertical-align:middle;">
-                              {{ block.transactions.length }}
-                          </td>
-                          <td style="vertical-align:middle;">
-                              {{ block.gasUsed | gasFormat }}
-                          </td>
-                      </tr>
-                  </tbody>
-              </table>
+                <table class="table table-striped table-hover table-bordered">
+                    <thead class="thead-inverse">
+                        <td>
+                            <strong><a data-locale="block" style="text-decoration:none">区块</a></strong>
+                        </td>
+                        <td><a data-locale="blockhash" style="text-decoration:none">区块哈希</a></td>
+                        <td><a data-locale="difficulty" style="text-decoration:none">难度</a></td>
+                        <td><a data-locale="miner" style="text-decoration:none">节点</a></td>
+                        <td><a data-locale="size" style="text-decoration:none">大小</a>
+
+                        </td>
+                        <td><a data-locale="date" style="text-decoration:none">时间</a>
+                        </td>
+                        <td><a data-locale="txs" style="text-decoration:none">消息</a>
+                        </td>
+                        <td><a data-locale="gasused" style="text-decoration:none">能量</a>
+
+                        </td>
+                    </thead>
+                    <tbody id="blockInfoBody">
+
+                    </tbody>
+                </table>
             </div>
-              <h1><i class="fa fa-exchange"><a data-locale="recenttransactions" style="text-decoration:none">数据交互</a></i>  
-              </h1><br />
-              <div class="table-responsive">
-              <table class="table table-striped table-hover table-bordered">
-                  <thead class="thead-inverse">
-                      <td>
-                          <strong><a data-locale="txhash" style="text-decoration:none">TX哈希</a></strong>
-                      </td>
-                      <td><a data-locale="block" style="text-decoration:none">区块</a></td>
-                      <td><a data-locale="from" style="text-decoration:none">从</a></td>
-                      <td><a data-locale="to" style="text-decoration:none">到</a>
-                      </td>
-                      <td><a data-locale="gasused" style="text-decoration:none">能量</a>
-                          
-                      </td>
-                      <td><a data-locale="value" style="text-decoration:none">数值</a>
-                          
-                      </td>
-                  </thead>
-                  <tbody>
-                      <tr ng-repeat="tx in recenttransactions track by $index-async" class="animated fadeIn">
-          
-                        <td style="vertical-align:middle;"><a href="/#/tx/{{ tx.hash }}">{{ tx.hash || "" | truncate : 45 }}</a></td>
-                          <td style="vertical-align:middle;">
-                              <a href="/#/block/{{ tx.blockNumber }}">
-                                  {{ tx.blockNumber || "" }}
-                              </a>
-                          </td>
-                          <td style="vertical-align:middle;"><a href="/#/address/{{ tx.from }}">{{ tx.from || "" | truncate : 20 }}</a></td>
-                          <td style="vertical-align:middle;"><a href="/#/address/{{ tx.to }}">{{ tx.to || "" | truncate : 20 }}</a></td>
-                          <td style="vertical-align:middle;">
-                              {{ tx.gas | gasFormat }}
-                          </td>
-                          <td style="vertical-align:middle;">
-                              {{ tx.value | BigNum }}
-                          </td>
-                      </tr>
-                  </tbody>
-              </table>
-          </div>
-          </div>
-          
+            <h1><i class="fa fa-exchange"><a data-locale="recenttransactions" style="text-decoration:none">数据交互</a></i>
+            </h1><br />
+            <div class="table-responsive">
+                <table class="table table-striped table-hover table-bordered">
+                    <thead class="thead-inverse">
+                        <td>
+                            <strong><a data-locale="txhash" style="text-decoration:none">TX哈希</a></strong>
+                        </td>
+                        <td><a data-locale="block" style="text-decoration:none">区块</a></td>
+                        <td><a data-locale="from" style="text-decoration:none">从</a></td>
+                        <td><a data-locale="to" style="text-decoration:none">到</a>
+                        </td>
+                        <td><a data-locale="gasused" style="text-decoration:none">能量</a>
+
+                        </td>
+                        <td><a data-locale="value" style="text-decoration:none">数值</a>
+
+                        </td>
+                    </thead>
+                    <tbody id="txInfoBody">
+
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
     </div>
 
-    <script src="scripts/angular.min.js"></script>
+    <!-- <script src="scripts/angular.min.js"></script> -->
 
     <script src="scripts/jquery-3.4.1.min.js"></script>
-    <script src="scripts/bootstrap.min.js"></script>
+    <!-- <script src="scripts/bootstrap.min.js"></script> -->
     <script src="scripts/i18n/jquery.i18n.properties.js"></script>
     <script src="scripts/i18n/language.js"></script>
     <script src="scripts/hex.js?v=1.2"></script>
+    <script>
 
+        $(function () {
+
+           
+
+            setInterval(function () {
+
+            $.ajax({
+                type: "post",
+                url: "/getBlockAndTxListInfos",
+                data: {},
+                dataType: "json",
+                success: function (result) {
+                    if (result.state) {
+
+
+                        var blockInfos = result.data.blockInfos;
+                        var txInfos = result.data.txInfos;
+                        var chainInfo = result.data.chainInfo;
+
+                        $("#chainBlockNum").text(chainInfo.blockNum);
+                        $("#chainGasLimit").text(chainInfo.gasLimit);
+                        $("#chainBlocktime").text(chainInfo.blocktime +  'second(s)');
+                        $("#chainDifficulty").text((chainInfo.difficulty/ 1000000).toFixed(3) + " M");
+
+
+                        $('#blockInfoBody').html('');
+                        $('#txInfoBody').html('');
+
+                        for (var info of blockInfos) {
+
+                            var _blockHtml =
+
+                                '<tr ng-repeat="block in blocks" class="animated fadeIn">' +
+                                '<td>' +
+                                '<a href="./block/' + info.number + '">' +
+                                '<span class="btn btn-sm btn-primary"><i class="fa fa-cube"></i>' + info.number + '</span>' +
+                                '</a>' +
+                                '</td>' +
+                                '<td><a href="./block/' + info.hash + '"><span class="btn btn-sm btn-success">' + info.hash.substring(0, 10) + '...' + '</span></a></td>' +
+                                '<td style="vertical-align:middle;">' + (info.diff / 1000000).toFixed(3) + " M" + '</td>' +
+                                '<td style="vertical-align:middle;"><a href="./address/' + info.miner + '">' + info.miner + '</a></td>' +
+                                '<td style="vertical-align:middle;">' + (info.size / 1000).toFixed(3) + " KB" + '</td>' +
+                                '<td style="vertical-align:middle;">' + info.timestamp + '</td>' +
+                                '<td style="vertical-align:middle;">' + info.numberOfTransactions + '</td>' +
+                                '<td style="vertical-align:middle;">' + info.gasUsed + '</td>' +
+                                '</tr>';
+
+                            $('#blockInfoBody').append(_blockHtml);
+                        }
+                        for (var info of txInfos) {
+
+                            var _txHtml =
+
+                                '<tr ng-repeat="tx in recenttransactions track by $index-async" class="animated fadeIn">' +
+
+                                '<td style="vertical-align:middle;"><a href="./tx/' + info.hash + '">' + info.hash + '</a></td>' +
+                                '<td style="vertical-align:middle;"><a href="./block/' + info.blockNumber + '">' + info.blockNumber + '</a></td>' +
+                                '<td style="vertical-align:middle;"><a href="./address/' + info.from + '">' + info.from + '</a></td>' +
+                                '<td style="vertical-align:middle;"><a href="./address/' + info.to + '">' + info.to + '</a></td>' +
+                                '<td style="vertical-align:middle;">' + info.gas + '</td>' +
+                                '<td style="vertical-align:middle;">' + info.value + '</td>' +
+                                '</tr>';
+
+
+                            $('#txInfoBody').append(_txHtml);
+                        }
+
+
+
+                    } else {
+                        layer.alert(result.msg);
+                    }
+                    return false;
+                },
+                //请求失败，包含具体的错误信息
+                error: function (e) {
+                    console.log(e.status);
+                    console.log(e.responseText);
+                }
+            });
+
+            }, 2000);
+
+        })
+
+
+
+    </script>
 
     <!--Services-->
     <div id="connectwarning" class="modal fade" role="dialog">
